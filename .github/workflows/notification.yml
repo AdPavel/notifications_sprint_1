@@ -25,11 +25,6 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
 
-    - name: Echo GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(steps) }}
-      run: echo $GITHUB_CONTEXT
-
     - name: Install dependencies
       id: install_dependencies
       if: ${{always()}}
@@ -48,7 +43,6 @@ jobs:
       id: flake8
       if: ${{always()}}
       run: flake8 srv_admin_panel srv_api srv_scheduler srv_worker --exit-zero --format=html --htmldir=report/flake_report/
-
 
     - name: Typo check with MyPy
       id: mypy
