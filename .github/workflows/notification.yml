@@ -86,4 +86,4 @@ jobs:
           Repository: ${{ github.repository }}
           Branch: ${{ github.head_ref }}
           Pipeline for ${{ github.sha }} finished with error.
-          Steps: ${{ STEPS_CONTEXT }}
+          Steps: ${ STEPS_CONTEXT }
