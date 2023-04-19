@@ -47,7 +47,7 @@ jobs:
         STEPS_CONTEXT: ${{ toJson(steps) }}
       run: |
         echo "$STEPS_CONTEXT"
-        echo "Branch:" ${{ github.head_ref }}
+        echo  ${{ github.head_ref }}
         
       #run: |
        #   if ${STEPS_CONTEXT} == true; then
