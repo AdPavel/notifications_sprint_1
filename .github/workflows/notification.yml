@@ -23,4 +23,15 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github.steps) }}
       run: echo $GITHUB_CONTEXT    
-          
+      
+    - name: Make reports directory
+      id: make_directories
+      if: ${{always()}}
+      run: |
+        mkdir -p report/flake_report/
+        mkdir -p report/mypy_report/
+        
+    - name: Echo steps context
+      env:
+        STEPS_CONTEXT: ${{ toJson(steps) }}
+      run: echo "$STEPS_CONTEXT"
