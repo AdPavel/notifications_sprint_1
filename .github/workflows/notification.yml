@@ -48,6 +48,8 @@ jobs:
       run: |
         echo "$STEPS_CONTEXT"
         echo  ${{ github.head_ref }}
+        echo ${{ github.head_ref }}.${{ github.sha }}
+        echo ${{ github.sha }}
         
       #run: |
        #   if ${STEPS_CONTEXT} == true; then
