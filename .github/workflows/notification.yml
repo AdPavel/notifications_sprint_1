@@ -1,0 +1,84 @@
+name: Notification check
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['3.9', '3.10']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.version }}
+
+    - name: Install dependencies
+      id: install_dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8-html mypy lxml wemake-python-styleguide
+
+    - name: Make reports directory
+      id: make_directories
+      run: |
+        mkdir -p report/flake_report/
+        mkdir -p report/mypy_report/
+
+    - name: Lint with flake8
+      id: flake8
+      run: flake8 srv_admin_panel srv_api srv_scheduler srv_worker --exit-zero --format=html --htmldir=report/flake_report/
+
+    - name: Typo check with MyPy
+      id: mypy
+      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports
+
+    - name: Uploads reports
+      id: upload_reports
+      uses: actions/upload-artifact@v2
+      with:
+        name: reports
+        path: report/**/*
+
+    - name: Send telegram message
+      if: ${{success()}}
+      uses: appleboy/telegram-action@master
+      with:
+        to: 1207168671 #${{ secrets.TELEGRAM_TO }}
+        token: 6147173172:AAGpSZ2dvO5Q3PBkSAHodr_XnV5t5QLEc9Q #${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ${{ github.repository }}: Pipeline for ${{github.event.commit.sha}} finished successfully
+
+    - name: Send telegram message
+      if: ${{failure()}}
+      uses: appleboy/telegram-action@master
+      with:
+        to: 1207168671 #${{ secrets.TELEGRAM_TO }}
+        token: 6147173172:AAGpSZ2dvO5Q3PBkSAHodr_XnV5t5QLEc9Q #${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          ${{github.sha}}
+          ${{ github.repository }}: Pipeline for ${{commit.sha}} finished with error    
+          ${{ github.run_id }} failed
+          
+
+
+#{project name}: Pipeline for {commit_hash} finished {"with error"|"successfully"}!
+#{if error}
+#{name of step} failed
+#{endif}
+
+#Указывать название репозитория в github (project name).
+#Добавить commit hash вашего коммита.
+#При успехе отдавать слово successfully, а при ошибке — with error.
+#Если произошла ошибка, то нужно выводить название шага, на котором она произошла.
