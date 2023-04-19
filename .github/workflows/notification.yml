@@ -68,17 +68,5 @@ jobs:
         token: 6147173172:AAGpSZ2dvO5Q3PBkSAHodr_XnV5t5QLEc9Q #${{ secrets.TELEGRAM_TOKEN }}
         message: |
           ${{github.sha}}
-          ${{ github.repository }}: Pipeline for ${{commit.sha}} finished with error    
+          ${{ github.repository }}: Pipeline for ${{github.event.commit.sha}} finished with error    
           ${{ github.run_id }} failed
-          
-
-
-#{project name}: Pipeline for {commit_hash} finished {"with error"|"successfully"}!
-#{if error}
-#{name of step} failed
-#{endif}
-
-#Указывать название репозитория в github (project name).
-#Добавить commit hash вашего коммита.
-#При успехе отдавать слово successfully, а при ошибке — with error.
-#Если произошла ошибка, то нужно выводить название шага, на котором она произошла.
