@@ -45,7 +45,10 @@ jobs:
       if: ${{failure()}}
       env:
         STEPS_CONTEXT: ${{ toJson(steps) }}
-      run: echo "$STEPS_CONTEXT"
+      run: |
+        echo "$STEPS_CONTEXT"
+        echo "Branch:" ${{ github.head_ref }}
+        
       #run: |
        #   if ${STEPS_CONTEXT} == true; then
         #    echo "flag=true" >> $GITHUB_ENV
