@@ -47,7 +47,7 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --ignore-missing-imports --html-report reports/mypy_report/
+      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports
 
     - name: Uploads reports
       id: upload_reports
@@ -77,4 +77,6 @@ jobs:
           ${{ github.repository }}: Pipeline for ${{github.event.commit.sha}} finished with error.
           Step: ${{ github.run_id }} failed
           ${{ github.workflow }}
-          
+          ${{ github.job_name }}
+          ${{ github.step_name }}
+          ${{ toJson(github) }}
