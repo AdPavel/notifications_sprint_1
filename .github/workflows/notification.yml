@@ -42,6 +42,7 @@ jobs:
       run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports        
         
     - name: Echo steps context
+      if: ${{failure()}}
       env:
         STEPS_CONTEXT: ${{ toJson(steps) }}
       run: echo "$STEPS_CONTEXT"
