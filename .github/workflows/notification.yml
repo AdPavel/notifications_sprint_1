@@ -31,7 +31,25 @@ jobs:
         mkdir -p report/flake_report/
         mkdir -p report/mypy_report/
         
+    - name: Lint with flake8
+      id: flake8
+      if: ${{always()}}
+      run: flake8 srv_admin_panel srv_api srv_scheduler srv_worker --exit-zero --format=html --htmldir=report/flake_report/
+
+    - name: Typo check with MyPy
+      id: mypy
+      if: ${{always()}}
+      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports        
+        
     - name: Echo steps context
       env:
         STEPS_CONTEXT: ${{ toJson(steps) }}
       run: echo "$STEPS_CONTEXT"
+      #run: |
+       #   if ${STEPS_CONTEXT} == true; then
+        #    echo "flag=true" >> $GITHUB_ENV
+         #   echo "flag set to true"
+         # else
+         #   echo "flag=false" >> $GITHUB_ENV
+         #   echo "flag set to false"
+         # fi
