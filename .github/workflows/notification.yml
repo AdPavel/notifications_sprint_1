@@ -47,7 +47,7 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports
+      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --ignore-missing-imports --html-report reports/mypy_report/
 
     - name: Uploads reports
       id: upload_reports
