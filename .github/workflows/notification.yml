@@ -21,31 +21,43 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@v4
+      if: ${{always()}}
       with:
         python-version: ${{ matrix.version }}
 
+    - name: Echo GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(steps) }}
+      run: echo $GITHUB_CONTEXT
+
     - name: Install dependencies
       id: install_dependencies
+      if: ${{always()}}
       run: |
         python -m pip install --upgrade pip
         pip install flake8-html mypy lxml wemake-python-styleguide
 
     - name: Make reports directory
       id: make_directories
+      if: ${{always()}}
       run: |
         mkdir -p report/flake_report/
         mkdir -p report/mypy_report/
 
     - name: Lint with flake8
       id: flake8
+      if: ${{(always())}}
       run: flake8 srv_admin_panel srv_api srv_scheduler srv_worker --exit-zero --format=html --htmldir=report/flake_report/
+
 
     - name: Typo check with MyPy
       id: mypy
+      if: ${{always()}}
       run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --html-report reports/mypy_report/ --ignore-missing-imports
 
     - name: Uploads reports
       id: upload_reports
+      if: ${{always()}}
       uses: actions/upload-artifact@v2
       with:
         name: reports
@@ -55,30 +67,23 @@ jobs:
       if: ${{success()}}
       uses: appleboy/telegram-action@master
       with:
-        to: 1207168671 #${{ secrets.TELEGRAM_TO }}
-        token: 6147173172:AAGpSZ2dvO5Q3PBkSAHodr_XnV5t5QLEc9Q #${{ secrets.TELEGRAM_TOKEN }}
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          ${{ github.repository }}: Pipeline for ${{github.event.commit.sha}} finished successfully
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.head_ref }}
+          Pipeline for ${{ github.sha }} finished successfully
 
     - name: Send telegram message
+      env:
+        STEPS_CONTEXT: ${{ toJson(steps) }}
       if: ${{failure()}}
       uses: appleboy/telegram-action@master
       with:
-        to: 1207168671 #${{ secrets.TELEGRAM_TO }}
-        token: 6147173172:AAGpSZ2dvO5Q3PBkSAHodr_XnV5t5QLEc9Q #${{ secrets.TELEGRAM_TOKEN }}
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
-          ${{github.sha}}
-          ${{ github.repository }}: Pipeline for ${{commit.sha}} finished with error    
-          ${{ github.run_id }} failed
-          
-
-
-#{project name}: Pipeline for {commit_hash} finished {"with error"|"successfully"}!
-#{if error}
-#{name of step} failed
-#{endif}
-
-#Указывать название репозитория в github (project name).
-#Добавить commit hash вашего коммита.
-#При успехе отдавать слово successfully, а при ошибке — with error.
-#Если произошла ошибка, то нужно выводить название шага, на котором она произошла.
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.head_ref }}
+          Pipeline for ${{ github.sha }} finished with error.
+          Steps: ${{ STEPS_CONTEXT }}
