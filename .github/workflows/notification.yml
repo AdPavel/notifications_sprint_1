@@ -25,11 +25,6 @@ jobs:
       with:
         python-version: ${{ matrix.version }}
 
-    - name: Echo GitHub context
-      env:
-        GITHUB_CONTEXT: ${{ toJson(steps) }}
-      run: echo $GITHUB_CONTEXT
-
     - name: Install dependencies
       id: install_dependencies
       if: ${{always()}}
@@ -43,7 +38,7 @@ jobs:
       run: |
         mkdir -p report/flake_report/
         mkdir -p report/mypy_report/
-        
+
     - name: Lint with flake8
       id: flake8
       if: ${{always()}}
@@ -85,5 +80,4 @@ jobs:
           Repository: ${{ github.repository }}
           Branch: ${{ github.head_ref }}
           Pipeline for ${{ github.sha }} finished with error.
-          Steps: $STEPS_CONTEXT
-
+          Steps: ${{ toJson(steps) }}
