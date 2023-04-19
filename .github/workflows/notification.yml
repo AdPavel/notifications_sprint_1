@@ -38,6 +38,7 @@ jobs:
       run: |
         mkdir -p report/flake_report/
         mkdir -p report/mypy_report/
+        echo ${{ toJson(github) }}
 
     - name: Lint with flake8
       id: flake8
@@ -79,4 +80,4 @@ jobs:
           ${{ github.workflow }}
           ${{ github.job_name }}
           ${{ github.step_name }}
-          ${{ toJson(github) }}
+          
