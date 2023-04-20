@@ -17,7 +17,9 @@ jobs:
         version: ['3.9', '3.10']
 
     steps:
-    - uses: actions/checkout@v3
+
+    - name: Checkout
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -47,12 +49,16 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --ignore-missing-imports --html-report reports/mypy_report/
+#      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --ignore-missing-imports --html-report reports/mypy_report/
+      uses: jashparekh/mypy-action@v2
+      with:
+        path: '.'
+        mypy_flags: '--verbose, --ignore-missing-imports, --html-report reports/mypy_report/'
 
     - name: Uploads reports
       id: upload_reports
       if: ${{always()}}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: reports
         path: report/**/*
