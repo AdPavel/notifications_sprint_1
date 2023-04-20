@@ -19,6 +19,7 @@ jobs:
     steps:
 
     - name: Checkout
+      id: checkout
       uses: actions/checkout@v3
 
     - name: Set up Python
@@ -50,7 +51,7 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-      run: mypy . --pretty --ignore-missing-imports --html-report reports/mypy_report/
+      run: mypy . --pretty --ignore-missing-imports --html-report report/mypy_report/
 
     - name: Uploads reports
       id: upload_reports
