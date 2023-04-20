@@ -49,11 +49,7 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-#      run: mypy srv_admin_panel srv_api srv_scheduler srv_worker --ignore-missing-imports --html-report reports/mypy_report/
-      uses: jashparekh/mypy-action@v2
-      with:
-        path: '.'
-        mypy_options: '--html-report reports/mypy_report/ --verbose --ignore-missing-imports '
+      run: mypy . --verbose --ignore-missing-imports --html-report reports/mypy_report/
 
     - name: Uploads reports
       id: upload_reports
