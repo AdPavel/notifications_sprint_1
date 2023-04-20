@@ -53,7 +53,7 @@ jobs:
       uses: jashparekh/mypy-action@v2
       with:
         path: '.'
-        mypy_options: '--verbose, --ignore-missing-imports, --html-report reports/mypy_report/'
+        mypy_options: '--html-report reports/mypy_report/ --verbose --ignore-missing-imports '
 
     - name: Uploads reports
       id: upload_reports
