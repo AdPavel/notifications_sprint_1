@@ -50,7 +50,7 @@ jobs:
     - name: Typo check with MyPy
       id: mypy
       if: ${{always()}}
-      run: mypy . --ignore-missing-imports --html-report reports/mypy_report/
+      run: mypy . --pretty --ignore-missing-imports --html-report reports/mypy_report/
 
     - name: Uploads reports
       id: upload_reports
