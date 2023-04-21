@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 include(
+    'components/common.py',
     'components/apps_and_middleware.py',
     'components/auth.py',
     'components/template.py',
     'components/database.py',
-    'components/common.py',
 )
