@@ -23,7 +23,7 @@ python app/manage.py createsuperuser
 ```
 5. Запустите сервис
 ```
-python app/manage.py runserver
+python srv_admin_panel/app/manage.py runserver
 ```
 Сервис будет доступен по адресу http://127.0.0.1:8000/
 

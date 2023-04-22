@@ -24,17 +24,27 @@ class Channel(UUIDMixin):
         verbose_name = 'Канал связи'
         verbose_name_plural = 'Каналы связи'
 
+    def __str__(self):
+        return self.name
+
 
 class Content(UUIDMixin):
 
-    text = models.TextField(
+    name = models.CharField(
         max_length=255,
-        verbose_name='Текст'
+        verbose_name='Название'
+    )
+    text = models.JSONField(
+        max_length=255,
+        verbose_name='Содержимое'
     )
 
     class Meta:
         verbose_name = 'Контент'
         verbose_name_plural = 'Контент'
+
+    def __str__(self):
+        return self.name
 
 
 class Template(UUIDMixin):
@@ -52,6 +62,9 @@ class Template(UUIDMixin):
         verbose_name = 'Шаблон'
         verbose_name_plural = 'Шаблоны'
 
+    def __str__(self):
+        return self.name
+
 
 class User(UUIDMixin):
 
@@ -63,10 +76,14 @@ class User(UUIDMixin):
         max_length=255,
         verbose_name='Фамилия'
     )
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     is_subscribed = models.BooleanField(
         default=True,
         verbose_name='Подписан на рассылку'
+    )
+    is_confirmed = models.BooleanField(
+        default=False,
+        verbose_name='email подтвержден'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -76,6 +93,9 @@ class User(UUIDMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.email
 
 
 class Notification(UUIDMixin):
@@ -140,3 +160,6 @@ class Notification(UUIDMixin):
     class Meta:
         verbose_name = 'Уведомление'
         verbose_name_plural = 'Уведомления'
+
+    def __str__(self):
+        return str(self.id)
