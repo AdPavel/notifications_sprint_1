@@ -12,4 +12,5 @@ include(
     'components/auth.py',
     'components/template.py',
     'components/database.py',
+    'components/celery.py',
 )
