@@ -138,6 +138,7 @@ class Notification(UUIDMixin):
         verbose_name='Приоритет'
     )
     STATUSES = (
+        ('CREATED', 'Создан'),
         ('OPEN', 'Ждет отправки'),
         ('CLOSED', 'Отправлено'),
         ('PROCESSED', 'В процессе отправки'),
@@ -145,7 +146,7 @@ class Notification(UUIDMixin):
     status = models.CharField(
         max_length=20,
         choices=STATUSES,
-        default='OPEN',
+        default='CREATED',
         verbose_name='Статус'
     )
     created_at = models.DateTimeField(

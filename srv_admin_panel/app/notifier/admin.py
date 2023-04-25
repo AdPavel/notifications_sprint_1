@@ -42,7 +42,6 @@ class NotificationAdmin(admin.ModelAdmin):
             message["To"] = ",".join(recipients)
             message["Subject"] = 'Регистрация в Movies 💛'
 
-            print(os.getcwd())
             template = loader.get_template(notification.template.file.name)
             context = {
                 'url': notification.content.text['redirect_url'],
