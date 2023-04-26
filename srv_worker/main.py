@@ -15,12 +15,13 @@ def send_notif(queue, template, user_first_name, user_email, content, priority):
 
 if __name__ == '__main__':
 
-    for queue in settings.queue_names:
-        consumer = QueueConsumer(rabbitmq_url='amqp://guest:guest@localhost:5672/', queue_name=queue)
-        data = consumer.fetch_data()
-        for user_id in data['users_id']:
-            send_notif(queue=queue, template=data['template_id']['file'],
-                       user_first_name=data['user_id']['first_name'],
-                       user_email=data['user_id']['email'],
-                       content=data['content_id']['text'],
-                       priority=data['priority'])
+    while True:
+        for queue in settings.queue_names:
+            consumer = QueueConsumer(rabbitmq_url=settings.rabbit_host, queue_name=queue)
+            data = consumer.fetch_data()
+            for user_id in data['users_id']:
+                send_notif(queue=queue, template=data['template_id']['file'],
+                           user_first_name=data['user_id']['first_name'],
+                           user_email=data['user_id']['email'],
+                           content=data['content_id']['text'],
+                           priority=data['priority'])
