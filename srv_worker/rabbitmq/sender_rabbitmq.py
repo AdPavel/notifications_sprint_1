@@ -4,6 +4,12 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Email
 import jinja2
 
+from ..config.setting import settings
+from ..db.postgres import PostgresDB
+
+pg_db = PostgresDB(host=settings.db_host, port=settings.db_port,
+                   database=settings.db_name, user=settings.db_user, password=settings.db_password)
+
 
 class NotifierSender:
     def __int__(self, rabbitmq_host: str, rabbitmq_queue_name: str, sendgrid_api_key: str):
@@ -44,11 +50,14 @@ class NotifierSender:
                 response = self.sendgrid_client.send(email)
                 if response.status_code == 200 or response.status_code == 202:
                     print('Email sent successfully')
+                    # отправить в PG с приоритетом low и статус closed
+                    pg_db.update_data(table_name='notification', _id=message['id'], )
                     break
                 else:
                     print('Error sending email, retrying...')
         except Exception as ex:
             print('Error sending email:', ex)
+            # отправить в PG с приоритетом low и статус open
         finally:
             channel.basic_ack(delivery_tag=method.delivery_tag)
 
