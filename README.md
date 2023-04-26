@@ -1,4 +1,13 @@
 # Сервис отправки уведомлений онлайн-кинотеатра
+## Как установить через контейнер
+1. Поднимите контейнер
+```
+docker-compose up -d --build
+```
+2. Если нужно, создайте суперпользователя
+```
+docker-compose exec admin python manage.py createsuperuser
+```
 ## Как установить локально
 1. Поднимите postgres
 ```
@@ -27,11 +36,11 @@ python app/manage.py createsuperuser
 ```
 6. Запустите сервис
 ```
-python srv_admin_panel/app/manage.py runserver
+python srv_admin_panel/manage.py runserver
 ```
 7. Поднимите celery
 ```
-cd srv_admin_panel/app/
+cd srv_admin_panel/
 celery -A config worker --beat --scheduler django --loglevel=info
 ```
 

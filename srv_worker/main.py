@@ -1,6 +1,6 @@
 from srv_worker.rabbitmq.reciver_rabbitmq import QueueConsumer
 from srv_worker.rabbitmq.sender_rabbitmq import NotifierSender
-from config.setting import settings
+from srv_admin_panel.config import settings
 
 
 def send_notif(queue, template, user_first_name, user_email, content, priority):
