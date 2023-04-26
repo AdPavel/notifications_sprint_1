@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  admin:
+    build:
+      context: ./srv_admin_panel
+      dockerfile: Dockerfile
+    entrypoint: /opt/app/run_uwsgi.sh
+    volumes:
+      - static_volume:/opt/app/static
+      - media_volume:/opt/app/media
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
+  postgres:
+    image: postgres:13.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+
+  celery:
+    restart: always
+    build: ./srv_admin_panel
+    env_file:
+      - ./.env
+    command: celery -A config worker --beat --scheduler django --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+      - admin
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
