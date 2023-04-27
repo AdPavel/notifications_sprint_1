@@ -9,12 +9,15 @@ class Settings(BaseSettings):
     rabbitmq_default_user: str
     rabbitmq_default_pass: str
     queue_names: list[str]
+    max_priority: int
 
     postgres_db: str
     postgres_user: str
     postgres_password: str
     postgres_host: str
     postgres_port: int
+
+    email: str
 
     class Config:
 
