@@ -1,9 +1,7 @@
 from django.contrib import admin
+
 from .models import Channel, Content, Template, User, Notification
-import smtplib
-from email.message import EmailMessage
-from django.template import loader
-import os
+from .utils import convert_notification
 
 
 @admin.register(User)
@@ -30,31 +28,13 @@ class NotificationAdmin(admin.ModelAdmin):
     @admin.action(description="Отправить")
     def send(self, request, queryset):
 
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        sender_email = os.getenv('EMAIL')
-        server.login(sender_email, os.getenv('EMAIL_PASSWORD'))
-
         for notification in queryset:
-            recipients = [user.email for user in notification.recipients.all()]
 
-            message = EmailMessage()
-            message['From'] = sender_email
-            message["To"] = ",".join(recipients)
-            message["Subject"] = 'Регистрация в Movies 💛'
+            notification_to_rabbit = convert_notification(notification)
+            # TODO: send to rabbit
 
-            template = loader.get_template(notification.template.file.name)
-            context = {
-                'url': notification.content.text['redirect_url'],
-            }
-            output = template.render(context)
-            message.add_alternative(output, subtype='html')
-
-            server.sendmail(sender_email, recipients, message.as_string())
-
-            notification.status = 'CLOSED'
+            notification.status = 'PROCESSED'
             notification.save()
-
-        server.close()
 
 
 @admin.register(Channel)
