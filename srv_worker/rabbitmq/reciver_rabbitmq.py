@@ -1,70 +1,64 @@
-import queue
-
-import pika
 import json
-import threading
+import pika
 
 
 class QueueConsumer:
-    def __init__(self, rabbitmq_url, queue_name):
-        self.rabbitmq_url = rabbitmq_url
+    def __init__(self, connection_params: str, queue_name: str, queue_send: str ,max_priority):
+        self.connection_params = connection_params
         self.queue_name = queue_name
+        self.queue_send = queue_send
+        self.max_priority = max_priority
 
-        self._connection = None
-        self._channel = None
-        self._consume_thread = None
-        self._event = threading.Event()
-        self._data_queue = queue.Queue()
+    ''''
+    Метод забирает из очереди не обработаные данные готовит их для письма и кладет в очередь на отправку 
+    '''
+    def send_notify(self, to: str, subject: str, template: str, content: str, _id, priority: int):
+        message = {
+            'to': to,
+            'subject': subject,
+            'template': template,
+            'context': content,
+            '_id': _id
+        }
 
-    # Методы `_open_connection`, `_open_channel` и `_setup_queue` приватные,
-    # он отвечает за открытие соединения, канала и создание очереди в RabbitMQ.
-    # Этот код можно использовать в каждом методе, который работает с RabbitMQ, так что их не перебивает друг друга.
-    def _open_connection(self):
-        if self._connection is None or self._connection.is_closed:
-            self._connection = pika.BlockingConnection(pika.URLParameters(self.rabbitmq_url))
+        connection = pika.BlockingConnection(pika.URLParameters(self.connection_params))
+        channel = connection.channel()
+        channel.queue_declare(queue=self.queue_send,
+                              arguments={"x-max-priority": self.max_priority},
+                              durable=True)
 
-    def _open_channel(self):
-        self._open_connection()
-        if self._channel is None or self._channel.is_closed:
-            self._channel = self._connection.channel()
+        channel.basic_publish(
+                    properties=pika.BasicProperties(priority=priority),
+                    exchange='',
+                    routing_key=self.queue_send,
+                    body=json.dumps(message)
+                )
 
-    def _setup_queue(self):
-        self._open_channel()
-        self._channel.queue_declare(queue=self.queue_name, durable=True)
+        print('Message sent to queue:', priority)
 
-    # Метод `_consume_messages` занимается получением сообщений из очереди,
-    # сохранением их в очередь и установкой события `_event`, что сообщение было получено.
-    def _consume_messages(self):
-        self._open_channel()
-        self._setup_queue()
+        connection.close()
 
-        def callback(ch, method, properties, body):
-            data = json.loads(body)
-            self._data_queue.put(data)
-            self._event.set()
-            ch.basic_ack(delivery_tag=method.delivery_tag)
+    def callback(self, channel, method, properties, body):
+        if body is not None:
+            message = json.loads(body.decode('utf-8'))
+            notification_id = message['notification_id']
+            subject = message['subject']
+            template = message['template']
+            content = message['content']
+            recipients = message['recipients']
+            for recipient in recipients:
+                email, first_name = recipient.values()
+                content['name'] = first_name
+                self.send_notify(to=email, subject=subject,
+                                 template=template, content=content,
+                                 _id=notification_id, priority=properties.priority)
 
-        self._channel.basic_consume(
-            queue=self.queue_name,
-            on_message_callback=callback)
+    def start(self):
+        connection = pika.BlockingConnection(pika.URLParameters(self.connection_params))
+        channel = connection.channel()
 
-        self._channel.start_consuming()
+        channel.queue_declare(queue=self.queue_name, arguments={'x-max-priority': 2}, durable=True)
+        channel.basic_qos(prefetch_count=1)
+        channel.basic_consume(queue=self.queue_name, on_message_callback=self.callback, auto_ack=True)
 
-    # Метод `fetch_data` нужен для получения данных из очереди в место вызова.
-    # Он запускает поток для получения данных, ждет подтверждения получения данных (`_event.wait()`),
-    # загружает данные из очереди `_data_queue.get()` и очищает очередь
-    # и выходит из функции, возвращая полученные данные.
-    def fetch_data(self):
-        self._consume_thread = threading.Thread(target=self._consume_messages)
-        self._consume_thread.start()
-
-        self._event.wait()
-        self._event.clear()
-        data = self._data_queue.get()
-        self._data_queue.task_done()
-        while not self._data_queue.empty():
-            self._data_queue.get_nowait()
-            self._data_queue.task_done()
-
-        self._consume_thread.join()
-        return data
+        channel.start_consuming()
