@@ -1,12 +1,11 @@
-import pathlib
-
-import pika
 import json
+import pathlib
+import sys
+
+import jinja2
+import pika
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
-import jinja2
-
-import sys
 
 sys.path.append("..")
 
