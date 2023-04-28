@@ -41,24 +41,11 @@ def confirm_email(_request: HttpRequest, id: uuid.UUID, redirect_url: str):
         return redirect(redirect_url)
 
 
-@router.get('/unsubscribe', auth=None)
-def unsubscribe(_request: HttpRequest, id: uuid.UUID):
+@router.get('/manage_subscription', auth=None)
+def manage_subscription(_request: HttpRequest, id: uuid.UUID, subscribe: bool):
     try:
         user = User.objects.get(id=id)
-        user.is_subscribed = False
-        user.save()
-    except Exception as e:
-        logging.exception(e)
-        return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
-
-
-@router.get('/subscribe', auth=None)
-def subscribe(_request: HttpRequest, id: uuid.UUID):
-    try:
-        user = User.objects.get(id=id)
-        user.is_subscribed = True
+        user.is_subscribed = subscribe
         user.save()
     except Exception as e:
         logging.exception(e)
