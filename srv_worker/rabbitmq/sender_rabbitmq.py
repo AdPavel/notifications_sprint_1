@@ -1,87 +1,83 @@
+from datetime import datetime, timezone
+import pathlib
+
 import pika
 import json
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Email
+from sendgrid.helpers.mail import Mail
 import jinja2
 
-from ..config.setting import settings
-from ..db.postgres import PostgresDB
+import sys
 
-pg_db = PostgresDB(host=settings.db_host, port=settings.db_port,
-                   database=settings.db_name, user=settings.db_user, password=settings.db_password)
+sys.path.append("..")
+
+from config.setting import settings
+from db.postgres import PostgresDB
+
+pg_db = PostgresDB(host=settings.postgres_host, port=settings.postgres_port,
+                   database=settings.postgres_db, user=settings.postgres_user,
+                   password=settings.postgres_password)
 
 
 class NotifierSender:
-    def __int__(self, rabbitmq_host: str, rabbitmq_queue_name: str, sendgrid_api_key: str):
-        self.rabbitmq_host = rabbitmq_host
-        self.rabbitmq_queue_name = rabbitmq_queue_name
-        self.sendgrid_client = SendGridAPIClient(api_key=sendgrid_api_key)
+    def __init__(self, connection_params: str, queue_name: str):
+        self.connection_params = connection_params
+        self.queue_name = queue_name
+        self.sendgrid_client = SendGridAPIClient(api_key=settings.sendgrid_api)
 
-
-        # настройка окружения для шаблонизации Jinja
-        self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader('templates'))
+        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/template_examples/"
+        self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))
 
     def start(self):
-        connection = pika.BlockingConnection(pika.ConnectionParameters(self.rabbitmq_host))
+        connection = pika.BlockingConnection(pika.URLParameters(self.connection_params))
         channel = connection.channel()
 
-        channel.queue_declare(queue=self.rabbitmq_queue_name, durable=True)
+        channel.queue_declare(queue=self.queue_name, arguments={"x-max-priority": settings.max_priority},
+                              durable=True)
 
         channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=self.rabbitmq_queue_name, on_message_callback=self.callback, auto_ack=False)
+        channel.basic_consume(queue=self.queue_name, on_message_callback=self.callback, auto_ack=False)
 
-        print(' [*] Waiting for messages.')
+        print(f' [*] Waiting for messages from {self.queue_name}')
         channel.start_consuming()
 
-    def callback(self, channel, method, properties, body):
-        message = json.loads(body)
-
-        # загрузка шаблона и рендеринг содержимого HTML-письма
-        template = self.jinja_env.get_template(message['template'])
-        html_content = template.render(**message['context'])
-
-        email = Email(
-            to=message['to'],
-            subject=message['subject'],
-            html_content=html_content)
-
+    def send_email(self, email, _id):
         try:
             for i in range(3):
                 response = self.sendgrid_client.send(email)
                 if response.status_code == 200 or response.status_code == 202:
                     print('Email sent successfully')
-                    # отправить в PG с приоритетом low и статус closed
-                    pg_db.update_data(table_name='notification', _id=message['id'], )
+                    # отправить в PG с текущей датой и статусом closed
+                    data = {'status': 'CLOSED', 'modified_at': datetime.now(timezone.utc)}
+                    pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
                     break
                 else:
                     print('Error sending email, retrying...')
         except Exception as ex:
             print('Error sending email:', ex)
             # отправить в PG с приоритетом low и статус open
-        finally:
-            channel.basic_ack(delivery_tag=method.delivery_tag)
+            data = {'status': 'OPEN', 'modified_at': datetime.now(timezone.utc), 'priority': 0}
+            pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
 
-    def notify(self, to, subject, template, context, priority):
-        message = {
-            'to': to,
-            'subject': subject,
-            'template': template,
-            'context': context
-        }
+    def callback(self, channel, method, properties, body):
+        if body is not None:
+            message = json.loads(body.decode('utf-8'))
+            notification_id = message['notification_id']
+            subject = message['subject']
+            template = self.jinja_env.get_template(message['template'])
+            content = message['content']
+            recipients = message['recipients']
+            for recipient in recipients:
+                email, first_name = recipient.values()
+                content['first_name'] = first_name
+                html_content = template.render(**content)
 
-        priority_levels = {'low': 0, 'medium': 1, 'high': 2}
-        priority_level = min(priority_levels[priority], 2)
-        # установка приоритетов
+                email = Mail(
+                    from_email=settings.email,
+                    to_emails=email,
+                    subject=subject,
+                    html_content=html_content)
 
-        properties = pika.BasicProperties(delivery_mode=2, priority=priority_level)
+                self.send_email(email=email, _id=notification_id)
 
-        connection = pika.BlockingConnection(pika.ConnectionParameters(self.rabbitmq_host))
-        channel = connection.channel()
-
-        channel.queue_declare(queue=self.rabbitmq_queue_name, durable=True)
-        channel.basic_publish(exchange='', routing_key=self.rabbitmq_queue_name, body=json.dumps(message),
-                              properties=properties)
-
-        print('Message sent to queue:', priority)
-
-        connection.close()
+        channel.basic_ack(delivery_tag=method.delivery_tag)
