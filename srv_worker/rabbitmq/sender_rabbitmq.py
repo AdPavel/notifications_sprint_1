@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone
 import pathlib
 
@@ -19,7 +18,6 @@ pg_db = PostgresDB(host=settings.postgres_host, port=settings.postgres_port,
                    database=settings.postgres_db, user=settings.postgres_user,
                    password=settings.postgres_password)
 
-# TEMPLATE_DIR = os.path.join(os.path.dirname('./template_examples'), 'templates')
 
 class NotifierSender:
     def __init__(self, connection_params: str, queue_name: str):
@@ -27,7 +25,6 @@ class NotifierSender:
         self.queue_name = queue_name
         self.sendgrid_client = SendGridAPIClient(api_key=settings.sendgrid_api)
 
-        # настройка окружения для шаблонизации Jinja
         env_template = f"{pathlib.Path(__file__).resolve().parent.parent.parent}/template_examples/"
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))
 
@@ -43,21 +40,6 @@ class NotifierSender:
 
         print(' [*] Waiting for messages.')
         channel.start_consuming()
-
-    # def _get_prepared_data(self, body):
-        # if body is not None:
-        #     message = json.loads(body.decode('utf-8'))
-        #     notification_id = message['notification_id']
-        #     subject = message['subject']
-        #     template = message['template']
-        #     content = message['content']
-        #     recipients = message['recipients']
-        #     for recipient in recipients:
-        #         email, first_name = recipient.values()
-        #         content['name'] = first_name
-        #         self.send_notify(to=email, subject=subject,
-        #                          template=template, content=content,
-        #                          _id=notification_id, priority=properties.priority)
 
     def send_email(self, email, _id):
         try:
@@ -78,17 +60,6 @@ class NotifierSender:
             pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
 
     def callback(self, channel, method, properties, body):
-        # message = json.loads(body)
-
-        # загрузка шаблона и рендеринг содержимого HTML-письма
-        # template = self.jinja_env.get_template(message['template'])
-        # html_content = template.render(**message['content'])
-
-        # email = Email(
-        #     to=message['to'],
-        #     subject=message['subject'],
-        #     html_content=html_content)
-
         if body is not None:
             message = json.loads(body.decode('utf-8'))
             notification_id = message['notification_id']
@@ -108,29 +79,5 @@ class NotifierSender:
                     html_content=html_content)
 
                 self.send_email(email=email, _id=notification_id)
+
         channel.basic_ack(delivery_tag=method.delivery_tag)
-
-                # self.send_notify(to=email, subject=subject,
-                #                  template=template, content=content,
-                #                  _id=notification_id, priority=properties.priority)
-
-
-        # self.send_email(email=email, _id=notification_id)
-        # try:
-        #     for i in range(3):
-        #         response = self.sendgrid_client.send(email)
-        #         if response.status_code == 200 or response.status_code == 202:
-        #             print('Email sent successfully')
-        #             # отправить в PG с текущей датой и статусом closed
-        #             data = {'status': 'CLOSED', 'modified_at': datetime.now(timezone.utc)}
-        #             pg_db.update_data(table_name='notifier_notification', _id=message['_id'], data=data)
-        #             break
-        #         else:
-        #             print('Error sending email, retrying...')
-        # except Exception as ex:
-        #     print('Error sending email:', ex)
-        #     # отправить в PG с приоритетом low и статус open
-        #     data = {'status': 'OPEN', 'modified_at': datetime.now(timezone.utc), 'priority': 0}
-        #     pg_db.update_data(table_name='notifier_notification', _id=message['_id'], data=data)
-        # finally:
-        #     channel.basic_ack(delivery_tag=method.delivery_tag)
