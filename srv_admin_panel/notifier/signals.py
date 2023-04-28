@@ -19,7 +19,7 @@ def send_welcome_email(
             text={'first_name': '', 'url': confirm_url}
         )
 
-        template = Template.objects.get(id=os.getenv('WELCOME_EMAIL_TEMPLATE_ID'))
+        template = Template.objects.get(id=os.getenv('EVENT_TEMPLATE_ID'))
         channel = Channel.objects.get(name='email')
         priority = 'HIGH'
 

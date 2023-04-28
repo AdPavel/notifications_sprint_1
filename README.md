@@ -9,6 +9,11 @@ docker-compose up -d --build
 ```
 docker-compose exec admin python manage.py createsuperuser
 ```
+Сервис будет доступен по адресу http://127.0.0.1:8080/
+
+Админка http://127.0.0.1:8080/admin
+
+Документация к API http://127.0.0.1:8080/api/docs
 ### Как установить локально
 1. Поднимите postgres
 ```
