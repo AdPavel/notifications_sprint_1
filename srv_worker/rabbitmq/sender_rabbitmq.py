@@ -25,7 +25,7 @@ class NotifierSender:
         self.queue_name = queue_name
         self.sendgrid_client = SendGridAPIClient(api_key=settings.sendgrid_api)
 
-        env_template = f"{pathlib.Path(__file__).resolve().parent.parent.parent}/template_examples/"
+        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/template_examples/"
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))
 
     def start(self):
@@ -69,7 +69,7 @@ class NotifierSender:
             recipients = message['recipients']
             for recipient in recipients:
                 email, first_name = recipient.values()
-                content['name'] = first_name
+                content['first_name'] = first_name
                 html_content = template.render(**content)
 
                 email = Mail(
