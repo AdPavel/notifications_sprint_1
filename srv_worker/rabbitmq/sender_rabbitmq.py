@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 import pathlib
 
 import pika
