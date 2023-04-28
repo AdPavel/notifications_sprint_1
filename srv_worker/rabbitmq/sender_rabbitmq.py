@@ -25,7 +25,7 @@ class NotifierSender:
         self.queue_name = queue_name
         self.sendgrid_client = SendGridAPIClient(api_key=settings.sendgrid_api)
 
-        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/template_examples/"
+        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/media/"
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))
 
     def start(self):
@@ -48,7 +48,7 @@ class NotifierSender:
                 if response.status_code == 200 or response.status_code == 202:
                     print('Email sent successfully')
                     # отправить в PG с текущей датой и статусом closed
-                    data = {'status': 'CLOSED', 'modified_at': datetime.now(timezone.utc)}
+                    data = {'status': 'CLOSED'}
                     pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
                     break
                 else:
@@ -56,7 +56,7 @@ class NotifierSender:
         except Exception as ex:
             print('Error sending email:', ex)
             # отправить в PG с приоритетом low и статус open
-            data = {'status': 'OPEN', 'modified_at': datetime.now(timezone.utc), 'priority': 0}
+            data = {'status': 'OPEN', 'priority': 'LOW'}
             pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
 
     def callback(self, channel, method, properties, body):
