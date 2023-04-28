@@ -1,4 +1,9 @@
 # Сервис отправки уведомлений онлайн-кинотеатра
+
+Ссылка на репозиторий: https://github.com/AdPavel/notifications_sprint_1
+
+Ссылка на схему: https://miro.com/app/board/uXjVMStUUjk=/?share_link_id=383027605319
+
 ## Установка
 ### Как установить через контейнер
 1. Поднимите контейнер
@@ -9,11 +14,13 @@ docker-compose up -d --build
 ```
 docker-compose exec admin python manage.py createsuperuser
 ```
-Сервис будет доступен по адресу http://127.0.0.1:8080/
 
-Админка http://127.0.0.1:8080/admin
+Админка http://localhost/admin
 
-Документация к API http://127.0.0.1:8080/api/docs
+Админка RabbitMQ: http://localhost:15672/ ``` login: admin, pass: admin ```
+
+Документация к API http://localhost/api/docs
+
 ### Как установить локально
 1. Поднимите postgres
 ```
@@ -50,9 +57,9 @@ cd srv_admin_panel/
 celery -A config worker --beat --scheduler django --loglevel=info
 ```
 
-Сервис будет доступен по адресу http://127.0.0.1:8000/
+Сервис будет доступен по адресу http://127.0.0.1:8080/
 
-Админка http://127.0.0.1:8000/admin
+Админка http://127.0.0.1:8080/admin
 
 ## Как использовать
 
