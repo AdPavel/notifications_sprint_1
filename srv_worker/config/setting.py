@@ -1,15 +1,27 @@
+import pathlib
 from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
     sendgrid_api: str
     rabbit_host: str
-    queue_names: list = list['email', 'sms', 'push']
+    rabbit_port: int
+    rabbitmq_default_user: str
+    rabbitmq_default_pass: str
+    queue_names: list[str]
+    max_priority: int
 
-    db_name: str = 'notifications_db'
-    db_user: str = 'admin'
-    db_password: str = 'admin'
-    db_host: str = '127.0.0.1'
-    db_port: int = 5432
+    postgres_db: str
+    postgres_user: str
+    postgres_password: str
+    postgres_host: str
+    postgres_port: int
+
+    email: str
+
+    class Config:
+
+        env_file = f"{pathlib.Path(__file__).resolve().parent.parent.parent}/.env"
+        env_file_encoding = 'utf-8'
 
 settings = Settings()

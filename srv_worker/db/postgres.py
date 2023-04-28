@@ -23,26 +23,12 @@ class PostgresDB:
         return connection, cursor
 
     @on_exception(expo, psycopg2.Error, max_tries=5)
-    def insert_data_to_pg(self, table_name, data):
-        connection, cursor = self.connect()
-        try:
-            sql = f"INSERT INTO {table_name} (column1, column2, column3) VALUES (%s, %s, %s)"
-            cursor.execute(sql, data)
-            connection.commit()
-            print("Data inserted successfully")
-        except (Exception, psycopg2.DatabaseError) as error:
-            print(f"Error: {error}")
-        finally:
-            cursor.close()
-            connection.close()
-
-    @on_exception(expo, psycopg2.Error, max_tries=5)
     def update_data(self, table_name, _id, data):
         connection, cursor = self.connect()
         try:
-            set_clause = ', '.join([f"{k} = %s" for k in data.keys()])
-            values = tuple(data.values()) + (_id,)
-            sql = f"UPDATE {table_name} SET {set_clause} WHERE id = %s"
+            set_collumn = ', '.join([f"{k} = %s" for k in data.keys()])
+            values = tuple(data.values())
+            sql = f"UPDATE {table_name} SET {set_collumn} WHERE id = {_id}"
             cursor.execute(sql, values)
             connection.commit()
             print("Data updated successfully")
@@ -52,17 +38,3 @@ class PostgresDB:
             cursor.close()
             connection.close()
 
-    # @on_exception(expo, psycopg2.Error, max_tries=5)
-    # def select_data(self, table_name):
-    #     connection, cursor = self.connect()
-    #     try:
-    #         sql = f"SELECT * FROM {table_name}"
-    #         cursor.execute(sql)
-    #         rows = cursor.fetchall()
-    #         for row in rows:
-    #             print(row)
-    #     except (Exception, psycopg2.DatabaseError) as error:
-    #         print(f"Error: {error}")
-    #     finally:
-    #         cursor.close()
-    #         connection.close()
