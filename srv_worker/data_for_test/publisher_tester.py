@@ -1,6 +1,8 @@
 import pika
 import json
 
+from config.setting import settings
+
 
 class RabbitPublisher:
     def __init__(self, connection_params, queue_name, max_priority):
@@ -50,8 +52,10 @@ text = {
     "subject": "template_name"
 }
 
-# connection_params= \
-#     f'amqp://{settings.rabbitmq_default_user}:{settings.rabbitmq_default_pass}@{settings.rabbit_host}:{settings.rabbit_port}'
-# publisher = RabbitPublisher(connection_params=connection_params, queue_name='sms', max_priority=2)
-# chanel = publisher.connect_to_rabbit()
-# publisher.publish(text, 2, chanel)
+if __name__ == '__main__':
+    connection_params = \
+        f'amqp://{settings.rabbitmq_default_user}:{settings.rabbitmq_default_pass}@{settings.rabbit_host}:{settings.rabbit_port}'
+    publisher = RabbitPublisher(connection_params=connection_params, queue_name='email', max_priority=2)
+    chanel = publisher.connect_to_rabbit()
+    for priority in range(3):
+        publisher.publish(message=text, priority=priority, channel=chanel)
