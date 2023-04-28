@@ -38,7 +38,7 @@ class NotifierSender:
         channel.basic_qos(prefetch_count=1)
         channel.basic_consume(queue=self.queue_name, on_message_callback=self.callback, auto_ack=False)
 
-        print(' [*] Waiting for messages.')
+        print(f' [*] Waiting for messages from {self.queue_name}')
         channel.start_consuming()
 
     def send_email(self, email, _id):
