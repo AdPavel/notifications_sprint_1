@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Channel, Content, Template, User, Notification
-from .utils import convert_notification, send_notification
+from .utils import send_notification
 
 
 @admin.register(User)
@@ -29,10 +29,8 @@ class NotificationAdmin(admin.ModelAdmin):
     def send(self, request, queryset):
 
         for notification in queryset:
-
-            notification_to_rabbit = convert_notification(notification)
             try:
-                send_notification(notification_to_rabbit)
+                send_notification(notification)
             except Exception:
                 notification.status = 'OPEN'
                 notification.save()
