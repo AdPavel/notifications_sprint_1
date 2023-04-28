@@ -68,7 +68,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./template_examples:/opt/app/template_examples
+      - media_volume:/opt/app/media
     depends_on:
       - movies_rabbitmq
 
