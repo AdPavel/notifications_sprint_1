@@ -75,10 +75,12 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
         template = Template.objects.get(id=os.getenv('EVENT_TEMPLATE_ID'))
         channel = Channel.objects.get(name='email')
         priority = 'LOW'
+        status = 'OPEN'
         notification = Notification.objects.create(
             content=content,
             template=template,
             channel=channel,
+            status=status,
             priority=priority
         )
         notification.recipients.set([user])
