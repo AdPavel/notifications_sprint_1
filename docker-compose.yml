@@ -6,7 +6,6 @@ services:
       context: ./srv_admin_panel
       dockerfile: Dockerfile
     entrypoint: /opt/app/run_uwsgi.sh
-#    container_name: srv_admin_panel
     volumes:
       - static_volume:/opt/app/static
       - media_volume:/opt/app/media
@@ -61,14 +60,17 @@ services:
     expose:
       - "5672"
 
-#  worker:
-#    restart: always
-#    build: ./srv_worker
-#    container_name: movies_worker
-#    env_file:
-#      - ./.env
-#    depends_on:
-#      - movies_rabbitmq
+  worker:
+    restart: always
+    build: ./srv_worker
+    container_name: movies_worker
+    entrypoint: /opt/app/run.sh
+    env_file:
+      - ./.env
+    volumes:
+      - ./template_examples:/opt/app/template_examples
+    depends_on:
+      - movies_rabbitmq
 
 #  nginx:
 #    container_name: notification_nginx
@@ -87,3 +89,4 @@ volumes:
   static_volume:
   media_volume:
   rabbitmq:
+  worker:
