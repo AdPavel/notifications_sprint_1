@@ -32,7 +32,7 @@ def send_new_films_notifications(self):
     recipients = User.objects.filter(is_subscribed=True, is_confirmed=True)
     content = Content.objects.create(
         name='Новые фильмы',
-        text={'films': films_titles, 'first_name': ''}
+        text={'films': films_titles, 'first_name': '', 'unsubscribe_url': os.getenv('UNSUBSCRIBE_URL')}
     )
     template = Template.objects.get(id=os.getenv('NEW_MOVIES_TEMPLATE_ID'))
     channel = Channel.objects.get(name='email')
