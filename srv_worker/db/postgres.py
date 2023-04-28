@@ -26,9 +26,9 @@ class PostgresDB:
     def update_data(self, table_name, _id, data):
         connection, cursor = self.connect()
         try:
-            set_collumn = ', '.join([f"{k} = %s" for k in data.keys()])
+            set_column = ', '.join([f"{k} = %s" for k in data.keys()])
             values = tuple(data.values())
-            sql = f"UPDATE {table_name} SET {set_collumn} WHERE id = {_id}"
+            sql = f"UPDATE {table_name} SET {set_column} WHERE id = '{_id}'"
             cursor.execute(sql, values)
             connection.commit()
             print("Data updated successfully")

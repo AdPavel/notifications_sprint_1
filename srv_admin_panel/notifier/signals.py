@@ -4,7 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import User, Content, Template, Notification, Channel
-from .utils import convert_notification, send_notification
+from .utils import send_notification
 
 
 @receiver(post_save, sender=User)
@@ -19,7 +19,7 @@ def send_welcome_email(
             text={'first_name': '', 'url': confirm_url}
         )
 
-        template = Template.objects.get(id=os.getenv('NEW_MOVIES_TEMPLATE_ID'))
+        template = Template.objects.get(id=os.getenv('WELCOME_EMAIL_TEMPLATE_ID'))
         channel = Channel.objects.get(name='email')
         priority = 'HIGH'
 
@@ -32,8 +32,7 @@ def send_welcome_email(
         notification.recipients.set([instance])
 
         try:
-            rabbit_notification = convert_notification(notification)
-            send_notification(rabbit_notification)
+            send_notification(notification)
         except Exception:
             notification.status = 'OPEN'
             notification.save()

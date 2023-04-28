@@ -1,13 +1,11 @@
-from datetime import datetime, timezone
-import pathlib
-
-import pika
 import json
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-import jinja2
-
+import pathlib
+import smtplib
 import sys
+from email.message import EmailMessage
+
+import jinja2
+import pika
 
 sys.path.append("..")
 
@@ -23,9 +21,9 @@ class NotifierSender:
     def __init__(self, connection_params: str, queue_name: str):
         self.connection_params = connection_params
         self.queue_name = queue_name
-        self.sendgrid_client = SendGridAPIClient(api_key=settings.sendgrid_api)
+        self.server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
 
-        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/template_examples/"
+        env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/media/"
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))
 
     def start(self):
@@ -41,22 +39,18 @@ class NotifierSender:
         print(f' [*] Waiting for messages from {self.queue_name}')
         channel.start_consuming()
 
-    def send_email(self, email, _id):
+    def send_email(self, email, _id, message):
+
+        self.server.login(settings.email, settings.email_password)
         try:
-            for i in range(3):
-                response = self.sendgrid_client.send(email)
-                if response.status_code == 200 or response.status_code == 202:
-                    print('Email sent successfully')
-                    # отправить в PG с текущей датой и статусом closed
-                    data = {'status': 'CLOSED', 'modified_at': datetime.now(timezone.utc)}
-                    pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
-                    break
-                else:
-                    print('Error sending email, retrying...')
+            self.server.sendmail(settings.email, email, message.as_string())
+            data = {'status': 'CLOSED'}
+            pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
+            print('Send email: SUCCESS')
         except Exception as ex:
             print('Error sending email:', ex)
             # отправить в PG с приоритетом low и статус open
-            data = {'status': 'OPEN', 'modified_at': datetime.now(timezone.utc), 'priority': 0}
+            data = {'status': 'OPEN', 'priority': 'LOW'}
             pg_db.update_data(table_name='notifier_notification', _id=_id, data=data)
 
     def callback(self, channel, method, properties, body):
@@ -72,12 +66,13 @@ class NotifierSender:
                 content['first_name'] = first_name
                 html_content = template.render(**content)
 
-                email = Mail(
-                    from_email=settings.email,
-                    to_emails=email,
-                    subject=subject,
-                    html_content=html_content)
+                message = EmailMessage()
+                message['From'] = settings.email
+                message["To"] = email
+                message["Subject"] = subject
 
-                self.send_email(email=email, _id=notification_id)
+                message.add_alternative(html_content, subtype='html')
+
+                self.send_email(email=email, _id=notification_id, message=message)
 
         channel.basic_ack(delivery_tag=method.delivery_tag)

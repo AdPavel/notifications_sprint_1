@@ -1,17 +1,18 @@
-from config.celery import app
-from .models import Notification, User, Content, Template, Channel
-from .utils import convert_notification, send_notification
-import requests
 import os
+
+import requests
+from config.celery import app
+
+from .models import Notification, User, Content, Template, Channel
+from .utils import send_notification
 
 
 @app.task(bind=True)
 def send_open_notifications(self):
     notifications = Notification.objects.filter(status='OPEN')
     for notification in notifications:
-        rabbit_notification = convert_notification(notification)
         try:
-            send_notification(rabbit_notification)
+            send_notification(notification)
         except Exception as e:
             raise self.retry(exc=e, countdown=5)
         notification.status = 'PROCESSED'
@@ -31,7 +32,7 @@ def send_new_films_notifications(self):
     recipients = User.objects.filter(is_subscribed=True, is_confirmed=True)
     content = Content.objects.create(
         name='Новые фильмы',
-        text={'films': films_titles, 'first_name': ''}
+        text={'films': films_titles, 'first_name': '', 'unsubscribe_url': os.getenv('UNSUBSCRIBE_URL')}
     )
     template = Template.objects.get(id=os.getenv('NEW_MOVIES_TEMPLATE_ID'))
     channel = Channel.objects.get(name='email')
@@ -45,9 +46,8 @@ def send_new_films_notifications(self):
     )
     notification.recipients.set(recipients)
 
-    rabbit_notification = convert_notification(notification)
     try:
-        send_notification(rabbit_notification)
+        send_notification(notification)
     except Exception as e:
         raise self.retry(exc=e, countdown=5)
     notification.status = 'PROCESSED'

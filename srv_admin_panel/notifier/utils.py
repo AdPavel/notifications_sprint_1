@@ -1,4 +1,7 @@
+import os
+
 from .models import Notification
+from .producer import RabbitPublisher
 from .rabbit_models import RabbitRecipient, RabbitNotification
 
 
@@ -8,9 +11,9 @@ def convert_notification(notification: Notification) -> dict:
         notification.recipients.all()
     ]
     rabbit_notification = RabbitNotification(
-        id=str(notification.id),
+        notification_id=str(notification.id),
         recipients=recipients,
-        template=notification.template.file.path,
+        template=notification.template.file.name,
         content=notification.content.text,
         subject=notification.template.name
     )
@@ -18,6 +21,23 @@ def convert_notification(notification: Notification) -> dict:
     return rabbit_notification.dict()
 
 
-def send_notification(notification):
-    # Закинуть уведомление в очередь на отправку
-    print(notification)
+def send_notification(notification: Notification):
+
+    user = os.getenv('RABBITMQ_DEFAULT_USER')
+    password = os.getenv('RABBITMQ_DEFAULT_PASS')
+    host = os.getenv('RABBIT_HOST')
+    port = os.getenv('RABBIT_PORT')
+
+    connection_params = \
+        f'amqp://{user}:{password}@{host}:{port}'
+    publisher = RabbitPublisher(connection_params=connection_params, queue_name='email', max_priority=2)
+
+    rabbit_notification = convert_notification(notification)
+
+    priority = {
+        'LOW': 0,
+        'MEDIUM': 1,
+        'HIGH': 2
+    }
+
+    publisher.publish(message=rabbit_notification, priority=priority[notification.priority])

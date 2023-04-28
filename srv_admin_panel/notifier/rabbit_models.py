@@ -11,7 +11,7 @@ class RabbitRecipient(BaseModel):
 
 class RabbitNotification(BaseModel):
 
-    id: str
+    notification_id: str
     recipients: list[RabbitRecipient]
     template: str
     content: Union[dict, None]

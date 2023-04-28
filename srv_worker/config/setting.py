@@ -3,7 +3,6 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    sendgrid_api: str
     rabbit_host: str
     rabbit_port: int
     rabbitmq_default_user: str
@@ -18,10 +17,12 @@ class Settings(BaseSettings):
     postgres_port: int
 
     email: str
+    email_password: str
 
     class Config:
 
         env_file = f"{pathlib.Path(__file__).resolve().parent.parent.parent}/.env"
         env_file_encoding = 'utf-8'
+
 
 settings = Settings()
