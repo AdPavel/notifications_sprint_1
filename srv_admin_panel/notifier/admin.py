@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Channel, Content, Template, User, Notification
-from .utils import convert_notification
+from .utils import convert_notification, send_notification
 
 
 @admin.register(User)
@@ -31,10 +31,14 @@ class NotificationAdmin(admin.ModelAdmin):
         for notification in queryset:
 
             notification_to_rabbit = convert_notification(notification)
-            # TODO: send to rabbit
-
-            notification.status = 'PROCESSED'
-            notification.save()
+            try:
+                send_notification(notification_to_rabbit)
+            except Exception:
+                notification.status = 'OPEN'
+                notification.save()
+            else:
+                notification.status = 'PROCESSED'
+                notification.save()
 
 
 @admin.register(Channel)

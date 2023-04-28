@@ -1,13 +1,8 @@
 from config.celery import app
 from .models import Notification, User, Content, Template, Channel
-from .utils import convert_notification
+from .utils import convert_notification, send_notification
 import requests
 import os
-
-
-def send_notification(notification):
-    # Закинуть уведомление в очередь на отправку
-    print(notification)
 
 
 @app.task(bind=True)
@@ -36,7 +31,7 @@ def send_new_films_notifications(self):
     recipients = User.objects.filter(is_subscribed=True, is_confirmed=True)
     content = Content.objects.create(
         name='Новые фильмы',
-        text={"films": films_titles}
+        text={'films': films_titles, 'first_name': ''}
     )
     template = Template.objects.get(id=os.getenv('NEW_MOVIES_TEMPLATE_ID'))
     channel = Channel.objects.get(name='email')

@@ -16,3 +16,8 @@ def convert_notification(notification: Notification) -> dict:
     )
     print(rabbit_notification.dict())
     return rabbit_notification.dict()
+
+
+def send_notification(notification):
+    # Закинуть уведомление в очередь на отправку
+    print(notification)
