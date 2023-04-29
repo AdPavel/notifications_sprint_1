@@ -1,0 +1,33 @@
+version: '3'
+services:
+  db:
+    container_name: sub-db
+    image: postgres:13.0-alpine
+    env_file:
+      - .env
+
+  redis:
+    container_name: sub-redis
+    image: redis:6.0.9
+    restart: on-failure
+
+  sub_service:
+    container_name: sub-service
+    image: auth-service:v1
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    links:
+      - db
+
+  nginx:
+    container_name: sub-nginx
+    image: auth-nginx:v1
+    depends_on:
+      - db
+      - redis
+      - sub_service
+    ports:
+      - "80:80"
