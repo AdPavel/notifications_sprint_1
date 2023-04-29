@@ -13,7 +13,7 @@ services:
 
   sub_service:
     container_name: sub-service
-    image: auth-service:v1
+    image: sub-service:v1
     env_file:
       - .env
     depends_on:
