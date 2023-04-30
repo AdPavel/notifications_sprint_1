@@ -1,13 +1,13 @@
 import logging
 import uuid
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import redirect
 from ninja import Router
 
 from .api_models import UserSchema, Response
 from .models import User, Notification, Template, Channel, Content
-import os
 
 router = Router()
 
@@ -58,8 +58,8 @@ def manage_subscription(_request: HttpRequest, id: uuid.UUID, subscribe: bool):
 def send_like_notification(_request: HttpRequest, id: uuid.UUID):
     try:
         user = User.objects.get(id=id)
-        content = Content.objects.get(id=os.getenv('EVENT_CONTENT_ID'))
-        template = Template.objects.get(id=os.getenv('EVENT_TEMPLATE_ID'))
+        content = Content.objects.get(id=settings.EVENT_CONTENT_ID)
+        template = Template.objects.get(id=settings.EVENT_TEMPLATE_ID)
         channel = Channel.objects.get(name='email')
         priority = 'LOW'
         status = 'OPEN'

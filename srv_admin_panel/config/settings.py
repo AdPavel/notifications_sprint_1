@@ -10,4 +10,6 @@ include(
     'components/template.py',
     'components/database.py',
     'components/celery.py',
+    'components/api.py',
+    'components/rabbit.py'
 )

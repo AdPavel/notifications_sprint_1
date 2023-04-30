@@ -1,4 +1,4 @@
-import os
+from django.conf import settings
 
 from .models import Notification
 from .producer import RabbitPublisher
@@ -23,10 +23,10 @@ def convert_notification(notification: Notification) -> dict:
 
 def send_notification(notification: Notification):
 
-    user = os.getenv('RABBITMQ_DEFAULT_USER')
-    password = os.getenv('RABBITMQ_DEFAULT_PASS')
-    host = os.getenv('RABBIT_HOST')
-    port = os.getenv('RABBIT_PORT')
+    user = settings.RABBITMQ_DEFAULT_USER
+    password = settings.RABBITMQ_DEFAULT_PASS
+    host = settings.RABBIT_HOST
+    port = settings.RABBIT_PORT
 
     connection_params = \
         f'amqp://{user}:{password}@{host}:{port}'
