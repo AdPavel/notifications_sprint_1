@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from django.shortcuts import redirect
 from ninja import Router
 from http import HTTPStatus
+import requests
 
 from .api_models import UserSchema, Response
 from .models import User, Notification, Template, Channel, Content
@@ -75,15 +76,14 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
     return HTTPStatus.OK, {'message': 'Success'}
 
 
-@router.get('/{user_id}')
-def get_user(_request: HttpRequest, id: uuid.UUID):
+@router.put('/{id}')
+def update_user(_request: HttpRequest, id: uuid.UUID):
     url = f'http://{settings.URL_FAST_API}/persons/{id}'
     try:
-        user = User.objects.get(url, id=id)
+        response = requests.get(url)
+        email = response.json['email']
+
+        User.objects.filter(id=id).update(email=email)
     except Exception as e:
         logging.exception(e)
         return HTTPStatus.BAD_REQUEST, {'message': str(e)}
-    return HTTPStatus.OK, user
-
-
-
