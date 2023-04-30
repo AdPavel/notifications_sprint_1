@@ -57,8 +57,6 @@ services:
       - ./rabbitmq_data:/var/lib/rabbitmq
     ports:
       - "15672:15672"
-    expose:
-      - "5672"
 
   worker:
     restart: always
