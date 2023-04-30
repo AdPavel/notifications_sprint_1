@@ -1,8 +1,5 @@
-import os
-from pathlib import Path
-from split_settings.tools import include
-
 from dotenv import load_dotenv
+from split_settings.tools import include
 
 load_dotenv()
 
@@ -13,4 +10,6 @@ include(
     'components/template.py',
     'components/database.py',
     'components/celery.py',
+    'components/api.py',
+    'components/rabbit.py'
 )

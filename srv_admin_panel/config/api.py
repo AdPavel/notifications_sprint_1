@@ -1,12 +1,12 @@
+from django.conf import settings
 from ninja import NinjaAPI
-from notifier.api import router as notifier_router
 from ninja.security import HttpBearer
-import os
+from notifier.api import router as notifier_router
 
 
 class Auth(HttpBearer):
     def authenticate(self, request, token):
-        if token == os.getenv('API_TOKEN'):
+        if token == settings.API_TOKEN:
             return token
 
 

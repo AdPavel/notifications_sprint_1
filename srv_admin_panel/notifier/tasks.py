@@ -1,7 +1,6 @@
-import os
-
 import requests
 from config.celery import app
+from django.conf import settings
 
 from .models import Notification, User, Content, Template, Channel
 from .utils import send_notification
@@ -22,7 +21,7 @@ def send_open_notifications(self):
 @app.task(bind=True)
 def send_new_films_notifications(self):
 
-    url = os.getenv('NEW_MOVIES_URL')
+    url = settings.NEW_MOVIES_URL
     response = requests.get(url, params={'amount': 10})
     response.raise_for_status()
     data = response.json()
@@ -32,9 +31,9 @@ def send_new_films_notifications(self):
     recipients = User.objects.filter(is_subscribed=True, is_confirmed=True)
     content = Content.objects.create(
         name='Новые фильмы',
-        text={'films': films_titles, 'first_name': '', 'unsubscribe_url': os.getenv('UNSUBSCRIBE_URL')}
+        text={'films': films_titles, 'first_name': '', 'unsubscribe_url': settings.UNSUBSCRIBE_URL}
     )
-    template = Template.objects.get(id=os.getenv('NEW_MOVIES_TEMPLATE_ID'))
+    template = Template.objects.get(id=settings.NEW_MOVIES_TEMPLATE_ID)
     channel = Channel.objects.get(name='email')
     priority = 'LOW'
 

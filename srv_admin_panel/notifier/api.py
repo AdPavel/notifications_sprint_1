@@ -1,13 +1,14 @@
 import logging
 import uuid
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import redirect
 from ninja import Router
+from http import HTTPStatus
 
 from .api_models import UserSchema, Response
 from .models import User, Notification, Template, Channel, Content
-import os
 
 router = Router()
 
@@ -23,9 +24,8 @@ def create_user(_request: HttpRequest, user: UserSchema):
         )
     except Exception as e:
         logging.exception(e)
-        return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+        return HTTPStatus.BAD_REQUEST, {'message': str(e)}
+    return HTTPStatus.OK, {'message': 'Success'}
 
 
 @router.get('/confirm_email', auth=None)
@@ -36,9 +36,8 @@ def confirm_email(_request: HttpRequest, id: uuid.UUID, redirect_url: str):
         user.save()
     except Exception as e:
         logging.exception(e)
-        return 400, {'message': str(e)}
-    else:
-        return redirect(redirect_url)
+        return HTTPStatus.BAD_REQUEST, {'message': str(e)}
+    return redirect(redirect_url)
 
 
 @router.get('/manage_subscription', auth=None)
@@ -49,17 +48,16 @@ def manage_subscription(_request: HttpRequest, id: uuid.UUID, subscribe: bool):
         user.save()
     except Exception as e:
         logging.exception(e)
-        return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+        return HTTPStatus.BAD_REQUEST, {'message': str(e)}
+    return HTTPStatus.OK, {'message': 'Success'}
 
 
 @router.get('/new_like')
 def send_like_notification(_request: HttpRequest, id: uuid.UUID):
     try:
         user = User.objects.get(id=id)
-        content = Content.objects.get(id=os.getenv('EVENT_CONTENT_ID'))
-        template = Template.objects.get(id=os.getenv('EVENT_TEMPLATE_ID'))
+        content = Content.objects.get(id=settings.EVENT_CONTENT_ID)
+        template = Template.objects.get(id=settings.EVENT_TEMPLATE_ID)
         channel = Channel.objects.get(name='email')
         priority = 'LOW'
         status = 'OPEN'
@@ -73,6 +71,5 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
         notification.recipients.set([user])
     except Exception as e:
         logging.exception(e)
-        return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+        return HTTPStatus.BAD_REQUEST, {'message': str(e)}
+    return HTTPStatus.OK, {'message': 'Success'}
