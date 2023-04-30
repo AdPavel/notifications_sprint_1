@@ -21,7 +21,7 @@ class NotifierSender:
     def __init__(self, connection_params: str, queue_name: str):
         self.connection_params = connection_params
         self.queue_name = queue_name
-        self.server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        self.server = smtplib.SMTP(settings.smtp_server, settings.smtp_port)
 
         env_template = f"{pathlib.Path(__file__).resolve().parent.parent}/media/"
         self.jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(env_template))

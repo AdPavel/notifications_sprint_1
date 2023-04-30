@@ -82,6 +82,16 @@ services:
     ports:
       - "80:80"
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+      - "8025:8025" # web ui
+    expose:
+      - "1025" # smtp server
+
 volumes:
   postgres_data:
   static_volume:
