@@ -3,7 +3,7 @@ from backoff import on_exception, expo
 
 
 class PostgresDB:
-    def __init__(self, host, port, database, user, password):
+    def __init__(self, host: str, port: int, database: str, user: str, password: str):
         self.host = host
         self.port = port
         self.database = database
@@ -23,7 +23,7 @@ class PostgresDB:
         return connection, cursor
 
     @on_exception(expo, psycopg2.Error, max_tries=5)
-    def update_data(self, table_name, _id, data):
+    def update_data(self, table_name: str, _id: str, data: dict):
         connection, cursor = self.connect()
         try:
             set_column = ', '.join([f"{k} = %s" for k in data.keys()])
@@ -31,9 +31,9 @@ class PostgresDB:
             sql = f"UPDATE {table_name} SET {set_column} WHERE id = '{_id}'"
             cursor.execute(sql, values)
             connection.commit()
-            print("Data updated successfully")
+            print('Data updated successfully')
         except (Exception, psycopg2.DatabaseError) as error:
-            print(f"Error: {error}")
+            print(f'Error: {error}')
         finally:
             cursor.close()
             connection.close()
