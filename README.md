@@ -19,6 +19,8 @@ docker-compose exec admin python manage.py createsuperuser
 
 Админка RabbitMQ: http://localhost:15672/ ``` login: admin, pass: admin ```
 
+Админка MailHog: http://localhost:8025
+
 Документация к API http://localhost/api/docs
 
 ### Как установить локально

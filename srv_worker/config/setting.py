@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     email: str
     email_password: str
 
+    smtp_server: str
+    smtp_port: int
+
     class Config:
 
         env_file = f"{pathlib.Path(__file__).resolve().parent.parent.parent}/.env"
