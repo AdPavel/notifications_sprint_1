@@ -76,8 +76,9 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
 
 @router.get('/{user_id}')
 def get_user(_request: HttpRequest, id: uuid.UUID):
+    url = f'http://{settings.url_fast_api}/persons/{id}'
     try:
-        user = User.objects.get(id=id)
+        user = User.objects.get(url, id=id)
     except Exception as e:
         logging.exception(e)
         return HTTPStatus.BAD_REQUEST, {'message': str(e)}
