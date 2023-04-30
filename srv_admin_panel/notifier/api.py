@@ -73,3 +73,15 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
         logging.exception(e)
         return HTTPStatus.BAD_REQUEST, {'message': str(e)}
     return HTTPStatus.OK, {'message': 'Success'}
+
+@router.get('/{user_id}')
+def get_user(_request: HttpRequest, id: uuid.UUID):
+    try:
+        user = User.objects.get(id=id)
+    except Exception as e:
+        logging.exception(e)
+        return HTTPStatus.BAD_REQUEST, {'message': str(e)}
+    return HTTPStatus.OK, user
+
+
+
