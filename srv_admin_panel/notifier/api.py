@@ -87,4 +87,3 @@ def update_user(_request: HttpRequest, id: uuid.UUID):
     except Exception as e:
         logging.exception(e)
         return HTTPStatus.BAD_REQUEST, {'message': str(e)}
-    return HTTPStatus.OK, {'message': 'Success'}
