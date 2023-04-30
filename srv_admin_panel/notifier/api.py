@@ -24,8 +24,7 @@ def create_user(_request: HttpRequest, user: UserSchema):
     except Exception as e:
         logging.exception(e)
         return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+    return 200, {'message': 'Success'}
 
 
 @router.get('/confirm_email', auth=None)
@@ -37,8 +36,7 @@ def confirm_email(_request: HttpRequest, id: uuid.UUID, redirect_url: str):
     except Exception as e:
         logging.exception(e)
         return 400, {'message': str(e)}
-    else:
-        return redirect(redirect_url)
+    return redirect(redirect_url)
 
 
 @router.get('/manage_subscription', auth=None)
@@ -50,8 +48,7 @@ def manage_subscription(_request: HttpRequest, id: uuid.UUID, subscribe: bool):
     except Exception as e:
         logging.exception(e)
         return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+    return 200, {'message': 'Success'}
 
 
 @router.get('/new_like')
@@ -74,5 +71,4 @@ def send_like_notification(_request: HttpRequest, id: uuid.UUID):
     except Exception as e:
         logging.exception(e)
         return 400, {'message': str(e)}
-    else:
-        return 200, {'message': 'Success'}
+    return 200, {'message': 'Success'}
