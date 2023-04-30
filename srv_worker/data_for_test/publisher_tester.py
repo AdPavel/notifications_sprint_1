@@ -5,7 +5,7 @@ from config.setting import settings
 
 
 class RabbitPublisher:
-    def __init__(self, connection_params, queue_name, max_priority):
+    def __init__(self, connection_params: str, queue_name: str, max_priority: int):
         self.connection_params = connection_params
         self.queue_name = queue_name
         self.max_priority = max_priority
@@ -16,12 +16,12 @@ class RabbitPublisher:
         channel = connection.channel()
         channel.queue_declare(
             queue=self.queue_name,
-            arguments={"x-max-priority": self.max_priority},
+            arguments={'x-max-priority': self.max_priority},
             durable=True
         )
         return channel
 
-    def publish(self, message, priority, channel):
+    def publish(self, message: dict, priority: int, channel: object):
         message = message
         channel.basic_publish(
             properties=pika.BasicProperties(priority=priority),

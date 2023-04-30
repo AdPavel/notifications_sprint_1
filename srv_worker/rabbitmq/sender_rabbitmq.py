@@ -30,7 +30,7 @@ class NotifierSender:
         connection = pika.BlockingConnection(pika.URLParameters(self.connection_params))
         channel = connection.channel()
 
-        channel.queue_declare(queue=self.queue_name, arguments={"x-max-priority": settings.max_priority},
+        channel.queue_declare(queue=self.queue_name, arguments={'x-max-priority': settings.max_priority},
                               durable=True)
 
         channel.basic_qos(prefetch_count=1)
@@ -39,7 +39,7 @@ class NotifierSender:
         print(f' [*] Waiting for messages from {self.queue_name}')
         channel.start_consuming()
 
-    def send_email(self, email, _id, message):
+    def send_email(self, email: str, _id: str, message: EmailMessage):
 
         self.server.login(settings.email, settings.email_password)
         try:

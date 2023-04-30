@@ -25,7 +25,7 @@ class NotificationAdmin(admin.ModelAdmin):
     autocomplete_fields = ('content', 'template', 'channel')
     actions = ('send',)
 
-    @admin.action(description="Отправить")
+    @admin.action(description='Отправить')
     def send(self, request, queryset):
 
         for notification in queryset:
