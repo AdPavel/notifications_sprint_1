@@ -16,7 +16,7 @@ class RabbitPublisher:
         channel = connection.channel()
         channel.queue_declare(
             queue=self.queue_name,
-            arguments={"x-max-priority": self.max_priority},
+            arguments={'x-max-priority': self.max_priority},
             durable=True
         )
         channel.basic_publish(
